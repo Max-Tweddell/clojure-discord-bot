@@ -1,10 +1,10 @@
-(ns clj-discord-example.core
+(ns clj-discord-bot.core
   (:gen-class)
   (:require [clj-discord.core :as discord]
             [clj-http.client :as client]
             [cheshire.core :as json]
-            [clj-discord-example.db :refer [db]]
-            [clj-discord-example.db.messages :as messages]
+            [clj-discord-bot.db :refer [db]]
+            [clj-discord-bot.db.messages :as messages]
             [clojure.string :as str]))
 
 (defonce token (.trim (slurp "token.txt")))
@@ -20,11 +20,11 @@
 
 (defn lmgtfy [data command]
   (let [channel_id (get data "channel_id") message (get data "id")]
-    (discord/answer-command data "lmgtfy" (str "http://lmgtfy.com/?q=darude+sandstorm" (str/replace command " " "+" )))
-    ))
+    (discord/answer-command data "lmgtfy" (str "http://lmgtfy.com/?q=darude+sandstorm" (str/replace command " " "+")))))
+
 
 (defn getRandomMessage [type data]
-  (let [commmand (get data "content" )]
+  (let [commmand (get data "content")]
    (discord/answer-command data "random" (str (messages/random-message db)))))
 (defn void [type data]
   (let [server (get data "channel_id")]

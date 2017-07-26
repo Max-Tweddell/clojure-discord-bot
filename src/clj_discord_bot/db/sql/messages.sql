@@ -1,4 +1,4 @@
--- src/clojure-discord-example/db/sql/messages.sql
+-- src/clojure-discord-bot/db/sql/messages.sql
 
 
 -- :name insert-message :! :n

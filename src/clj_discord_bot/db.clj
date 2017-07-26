@@ -1,4 +1,4 @@
-(ns clj-discord-example.db
+(ns clj-discord-bot.db
   (:require [clojure.java.jdbc :as j]
             [hugsql.core :as hugsql]))
 
@@ -12,4 +12,3 @@
            :user "peon"
            :stringtype "unspecified"
            :password "potato"}))
-
