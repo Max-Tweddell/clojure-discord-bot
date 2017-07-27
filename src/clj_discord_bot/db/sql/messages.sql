@@ -1,20 +1,18 @@
 -- src/clojure-discord-bot/db/sql/messages.sql
 
 
--- :name insert-message :! :n
+-- :name insert-message :!
 -- :doc Insert a single character
 insert into messages (info)
 values (:message)
 --WITHOUT FUNCTION AS IMPLICIT
 
--- :name random-message :! :n
+-- :name random-message :? :raw
 -- :doc get a random message
 select
-info -> 'content' as content
+info ->> 'content' as content
 from
 messages
-where
-info -> 'author' ->> 'username' = 'vestigneo'
 order by
 random()
 limit 1
