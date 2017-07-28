@@ -13,6 +13,8 @@ select
 info ->> 'content' as content
 from
 messages
+where
+info -> 'author' ->> 'username' = 'vestigneo' OR info -> 'author' ->> 'username' = 'tommy bread' AND Info ->> 'channel_id' <> '324776471883415552'
 order by
 random()
 limit 1

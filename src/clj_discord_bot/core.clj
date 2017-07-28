@@ -41,7 +41,7 @@
 (defn rot13 [in]
   (let [A (set "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
         Am (->> (cycle A) (drop 26) (take 52) (zipmap A))]
-    (clojure.string/join (map (fn* [p1__56363#] (Am p1__56363# p1__56363#)) in))))
+    (str/join (map (fn* [p1__56363#] (Am p1__56363# p1__56363#)) in))))
 
 (defn encrypt [type data]
   (let [command (get data "content") args (str/join " " (rest (str/split (get data "content") #" ")))]
