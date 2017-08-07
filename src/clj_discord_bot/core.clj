@@ -26,9 +26,8 @@
 
 (defn getRandomMessage [type data]
   (let [commmand (get data "content")]
-    (discord/answer-command data "random" (:content (first (messages/random-message db))) 
+    (discord/answer-command data "random" (str (System/currentTimeMillis) (time (:content (first (messages/random-message db)))))
                             )))
-
 (defn void [type data]
   (let [server (get data "channel_id")]
     (if (= server "324776471883415552")
