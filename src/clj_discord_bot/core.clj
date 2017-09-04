@@ -5,6 +5,7 @@
             [cheshire.core :as json]
             [clj-discord-bot.db :refer [db]]
             [clj-discord-bot.db.messages :as messages]
+            [clj-discord-bot.custom-commands :as commands]
             [clojure.string :as str])
   (:import [org.postgresql.util.PGobject]))
 
@@ -26,8 +27,7 @@
 
 (defn getRandomMessage [type data]
   (let [commmand (get data "content")]
-    (discord/answer-command data "random" (str (time (:content (first (messages/random-message db)))))
-                            )))
+    (discord/answer-command data "random" (str (time (:content (first (messages/random-message db))))))))
 (defn void [type data]
   (let [server (get data "channel_id")]
     (if (= server "324776471883415552")
@@ -56,7 +56,7 @@
 
 (defn oaky [type data]
   (let [commmand (get data "content")]
-    (discord/answer-message data "oaky"  "https://68.media.tumblr.com/15208297a50932cccbef51a5dbeb47bf/tumblr_inline_ojfxuvC1RV1qierqv_540.jpg")))
+    (discord/answer-message data "oaky" "https://68.media.tumblr.com/15208297a50932cccbef51a5dbeb47bf/tumblr_inline_ojfxuvC1RV1qierqv_540.jpg")))
 
 (defn log-event [type data]
   (do
@@ -69,6 +69,6 @@
 
 (defn -main [& args]
   (discord/connect token {"MESSAGE_UPDATE" [d20 d100 command-test void log-event]
-                          "MESSAGE_CREATE" [d20 d100 command-test void getRandomNumber mum log-event oaky encrypt decrypt getRandomMessage]} true))
+                          "MESSAGE_CREATE" (into [d20 d100 command-test void getRandomNumber mum log-event oaky encrypt decrypt getRandomMessage] (commands/read-data))} true))
 
-                                        ;(discord/disconnect)
+;(discord/disconnect)
