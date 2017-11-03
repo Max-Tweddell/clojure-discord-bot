@@ -11,6 +11,10 @@
 
 (defonce token (.trim (slurp "token.txt")))
 
+(defn custom-command [trigger answer data]
+  (let [command (get data "content")]
+    (discord/answer-command data trigger (str answer))))
+
 (defn d100 [type data]
   (discord/answer-command data "!d100" (str "Here you are a random number between 1 and 100: " (inc (rand-int 100)))))
 
@@ -28,10 +32,14 @@
 (defn getRandomMessage [type data]
   (let [commmand (get data "content")]
     (discord/answer-command data "random" (str (time (:content (first (messages/random-message db))))))))
+
 (defn void [type data]
   (let [server (get data "channel_id")]
     (if (= server "324776471883415552")
       (discord/delete-message data))))
+
+(defn example [_ data]
+  (custom-command "daveboy" "https://www.nbr.co.nz/sites/default/files/blog_post_img/David-Seymour-web1.jpg" data))
 
 (defn getRandomNumber [type data]
   (let [command (get data "content")]
@@ -50,13 +58,6 @@
   (let [command (get data "content") args (str/join " " (rest (str/split (get data "content") #" ")))]
     (try (discord/answer-command data "decrypt" (str args "->" (rot13 args))) (catch Exception e (println "args")))))
 
-(defn mum [type data]
-  (let [command (get data "content")]
-    (discord/answer-message data "mom " "mum")))
-
-(defn oaky [type data]
-  (let [commmand (get data "content")]
-    (discord/answer-message data "oaky" "https://68.media.tumblr.com/15208297a50932cccbef51a5dbeb47bf/tumblr_inline_ojfxuvC1RV1qierqv_540.jpg")))
 
 (defn log-event [type data]
   (do
@@ -71,4 +72,4 @@
   (discord/connect token {"MESSAGE_UPDATE" [d20 d100 command-test void log-event]
                           "MESSAGE_CREATE" (into [d20 d100 command-test void getRandomNumber mum log-event oaky encrypt decrypt getRandomMessage] (commands/read-data))} true))
 
-;(discord/disconnect)
+                                        ;(discord/disconnect)
