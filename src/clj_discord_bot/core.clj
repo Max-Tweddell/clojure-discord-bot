@@ -1,19 +1,25 @@
 (ns clj-discord-bot.core
   (:gen-class)
-  (:require [clj-discord.core :as discord]
+  (:require [clj-discord-bot.discord :as discord]
             [clj-http.client :as client]
             [cheshire.core :as json]
             [clj-discord-bot.db :refer [db]]
+            [clj-discord-bot.scraper :as scraper]
             [clj-discord-bot.db.messages :as messages]
-            [clj-discord-bot.custom-commands :as commands]
             [clojure.string :as str])
   (:import [org.postgresql.util.PGobject]))
 
 (defonce token (.trim (slurp "token.txt")))
 
-(defn custom-command [trigger answer data]
-  (let [command (get data "content")]
-    (discord/answer-command data trigger (str answer))))
+
+(defn scraper [type data]
+  (do
+    (println "\nReceived: " type " -> " data)
+    (messages/insert-message db {:message (json/generate-string data)})))
+(comment
+  (defn custom-command [trigger answer data]
+    (let [command (get data "content")]
+      (discord/answer-command data trigger (str answer)))))
 
 (defn d100 [type data]
   (discord/answer-command data "!d100" (str "Here you are a random number between 1 and 100: " (inc (rand-int 100)))))
@@ -37,9 +43,9 @@
   (let [server (get data "channel_id")]
     (if (= server "324776471883415552")
       (discord/delete-message data))))
-
-(defn example [_ data]
-  (custom-command "daveboy" "https://www.nbr.co.nz/sites/default/files/blog_post_img/David-Seymour-web1.jpg" data))
+(comment
+  (defn example [_ data]
+    (custom-command "daveboy" "https://www.nbr.co.nz/sites/default/files/blog_post_img/David-Seymour-web1.jpg" data)))
 
 (defn getRandomNumber [type data]
   (let [command (get data "content")]
@@ -70,6 +76,6 @@
 
 (defn -main [& args]
   (discord/connect token {"MESSAGE_UPDATE" [d20 d100 command-test void log-event]
-                          "MESSAGE_CREATE" (into [d20 d100 command-test void getRandomNumber mum log-event oaky encrypt decrypt getRandomMessage] (commands/read-data))} true))
+                          "MESSAGE_CREATE" [scraper/get-100-messages d20 d100 command-test void getRandomNumber log-event encrypt decrypt getRandomMessage]} true))
 
                                         ;(discord/disconnect)

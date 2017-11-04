@@ -1,6 +1,6 @@
 (ns clj-discord-bot.custom-commands
   (:require [clojure.java.io :as io]
-            [clj-discord.core :as discord]
+            [clj-discord-bot.discord :as discord]
             [cheshire.core :as json]))
 
 (println "hello")

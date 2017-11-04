@@ -1,7 +1,7 @@
-(ns clj-discord.core
+(ns clj-discord-bot.discord
   (:gen-class)
   (:require [clj-http.client :as http]
-            [clojure.data.json :as json]
+            [cheshire.core :as json]
             [gniazdo.core :as ws]
             [taoensso.carmine :as car :refer (wcar)]
             [clojure.string :as str]))
@@ -33,7 +33,7 @@
   (reset! the-token (str "Bot " token))
   (reset! the-gateway (str
                        (get
-                        (json/read-str
+                        (json/decode
                          (:body (http/get "https://discordapp.com/api/gateway"
                                           {:headers {:authorization @the-token}})))
                         "url")
@@ -41,7 +41,7 @@
   (reset! the-socket
           (ws/connect
            @the-gateway
-           :on-receive #(let [received (json/read-str %)
+           :on-receive #(let [received (json/decode %)
                               logevent (if log-events (println "\n" %))
                               op       (get received "op")
                               type     (get received "t")
@@ -57,26 +57,36 @@
                            (Thread/sleep 100)
                            (do
                              (if log-events (println "\nSending heartbeat " @the-seq))
-                             (ws/send-msg @the-socket (json/write-str {:op 1, :d @the-seq}))
+                             (ws/send-msg @the-socket (json/encode {:op 1, :d @the-seq}))
                              (Thread/sleep @the-heartbeat-interval))))
                        (catch Exception e (do
                                             (println "\nCaught exception: " (.getMessage e) " -> " (str e))
                                             (write-file (.getMessage e))
                                             (reset! reconnect-needed true)))))))
   (Thread/sleep 10)
-  (ws/send-msg @the-socket (json/write-str {:op 2, :d {"token"      @the-token
-                                                       "properties" {"$os"               "linux"
-                                                                     "$browser"          "clj-discord"
-                                                                     "$device"           "clj-discord"
-                                                                     "$referrer"         ""
-                                                                     "$referring_domain" ""}
-                                                       "compress"   false}}))
+  (ws/send-msg @the-socket (json/encode {:op 2, :d {"token"      @the-token
+
+                                                    "properties" {"$os"               "linux"
+                                                                  "$browser"          "clj-discord"
+                                                                  "$device"           "clj-discord"
+                                                                  "$referrer"         ""
+                                                                  "$referring_domain" ""}
+                                                    "compress"   false}}))
   (while (not @reconnect-needed) (Thread/sleep 10))
   (connect token functions log-events))
 
+(defn get-previous-messages [channel_id message]
+  "gets channel messages before selected message"
+  (http/get (str "https://discordapp.com/api/channels" channel_id "/messages")
+            {:body (json/encode {:before (:id message)})
+             :headers {:authorization @the-token}
+             :content-type :json
+             :accept :json})
+
+  )
 (defn post-message [channel_id message]
   (http/post (str "https://discordapp.com/api/channels/" channel_id "/messages")
-             {:body (json/write-str {:content message
+             {:body (json/encode {:content message
                                      :nonce (str (System/currentTimeMillis))
                                      :tts false})
               :headers {:authorization @the-token}
