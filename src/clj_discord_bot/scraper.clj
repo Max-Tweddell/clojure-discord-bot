@@ -9,8 +9,8 @@
 (defn get-100-messages [type data]
   (let [messages (discord/get-previous-messages (:channel_id data) (:message_id data))]
     (do
-      (scraper/insert-message db {:message (json/generate-string data)})
+    ;;  (scraper/insert-message db {:message (json/generate-string data)})
       (println (str "scraper" type data))
-      (swap! current-message (+ 50)))
+      (swap! current-message inc))))
 (defn start []
   (get-100-messages))

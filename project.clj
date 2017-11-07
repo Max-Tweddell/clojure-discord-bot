@@ -2,11 +2,12 @@
   :dependencies [
                  [cheshire "5.7.1"]
                  [org.clojure/clojure "1.8.0"]
+                 [org.clojure/data.json "0.2.6"]
                  [clj-http "3.6.1"]
                  [stylefruits/gniazdo "1.0.1"]
                  [com.taoensso/carmine "2.16.0"]
-                 [org.clojure/java.jdbc "0.7.0"]
-                 [com.layerware/hugsql "0.4.7"]
+                 [org.clojure/java.jdbc "0.7.3"]
+                 [com.layerware/hugsql "0.4.8"]
                  [org.postgresql/postgresql "9.4.1212"]
                  [environ "1.1.0"]]
   :main clj-discord-bot.core

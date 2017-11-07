@@ -10,7 +10,8 @@ values (:message)
 -- :name random-message :? :raw
 -- :doc get a random message
 select
-info ->> 'content' as content
+info ->> 'content' as content,
+info -> 'author' ->> 'username' as username
 from
 messages
 where

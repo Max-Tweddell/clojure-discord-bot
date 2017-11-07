@@ -2,7 +2,7 @@
   (:require [clojure.java.jdbc :as j]
             [hugsql.core :as hugsql]))
 
-(let [db-host "localhost"
+(let [db-host "172.93.48.105"
       db-port 5432
       db-name "discord"]
 

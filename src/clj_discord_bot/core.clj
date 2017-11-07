@@ -4,22 +4,12 @@
             [clj-http.client :as client]
             [cheshire.core :as json]
             [clj-discord-bot.db :refer [db]]
-            [clj-discord-bot.scraper :as scraper]
+            ;;   [clj-discord-bot.scraper :as scraper]
             [clj-discord-bot.db.messages :as messages]
             [clojure.string :as str])
   (:import [org.postgresql.util.PGobject]))
 
 (defonce token (.trim (slurp "token.txt")))
-
-
-(defn scraper [type data]
-  (do
-    (println "\nReceived: " type " -> " data)
-    (messages/insert-message db {:message (json/generate-string data)})))
-(comment
-  (defn custom-command [trigger answer data]
-    (let [command (get data "content")]
-      (discord/answer-command data trigger (str answer)))))
 
 (defn d100 [type data]
   (discord/answer-command data "!d100" (str "Here you are a random number between 1 and 100: " (inc (rand-int 100)))))
@@ -35,19 +25,18 @@
   (let [channel_id (get data "channel_id") message (get data "id")]
     (discord/answer-command data "lmgtfy" (str "http://lmgtfy.com/?q=darude+sandstorm" (str/replace command " " "+")))))
 
-(defn getRandomMessage [type data]
-  (let [commmand (get data "content")]
-    (discord/answer-command data "random" (str (time (:content (first (messages/random-message db))))))))
+(defn get-random-message [type data]
+  (let [commmand (get data "content") message (first (messages/random-message db))]
+    (do
+      (println message)
+      (discord/answer-command data "random" (str (:username message) ": " (:content message))))))
 
 (defn void [type data]
   (let [server (get data "channel_id")]
     (if (= server "324776471883415552")
       (discord/delete-message data))))
-(comment
-  (defn example [_ data]
-    (custom-command "daveboy" "https://www.nbr.co.nz/sites/default/files/blog_post_img/David-Seymour-web1.jpg" data)))
 
-(defn getRandomNumber [type data]
+(defn get-random-number [type data]
   (let [command (get data "content")]
     (discord/answer-command data "getRandomNumber()" (str "Here you are, a random number : " 4))))
 
@@ -64,18 +53,26 @@
   (let [command (get data "content") args (str/join " " (rest (str/split (get data "content") #" ")))]
     (try (discord/answer-command data "decrypt" (str args "->" (rot13 args))) (catch Exception e (println "args")))))
 
-
 (defn log-event [type data]
   (do
     (println "\nReceived: " type " -> " data)
     (messages/insert-message db {:message (json/generate-string data)})))
 
 (defn repler [type data]
-  (let [command (get data "content") args (str/join " " (rest (str/split (get data "content") #" ")))]
-    (discord/answer-command data "eval" (eval (read-string args)))))
+  (let [command (get data "content")
+        args (str/join " " (rest (str/split (get data "content") #" ")))
+        eval-result (eval (read-string args))]
+
+    (try
+      (do
+        (discord/answer-command data "eval" (str eval-result))
+        (println eval-result)
+        (println args))
+      (catch Exception e (println e)))))
 
 (defn -main [& args]
-  (discord/connect token {"MESSAGE_UPDATE" [d20 d100 command-test void log-event]
-                          "MESSAGE_CREATE" [scraper/get-100-messages d20 d100 command-test void getRandomNumber log-event encrypt decrypt getRandomMessage]} true))
+  (discord/connect {:token token
+                    :functions {"MESSAGE_UPDATE" [d20 d100 command-test void log-event]
+                                "MESSAGE_CREATE" [repler d100 command-test void get-random-number log-event encrypt decrypt get-random-message]}}))
 
                                         ;(discord/disconnect)
